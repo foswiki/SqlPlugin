@@ -1,0 +1,92 @@
+%META:TOPICINFO{author="micha" comment="reprev" date="1270549594" format="1.1" reprev="1.2" version="1.2"}%
+---+!! %TOPIC%
+
+%TOC%
+
+This plugin adds access to SQL databases using wiki apps. 
+
+---++ Syntax
+
+---+++ SQL
+
+Executes an SQL statement. This can be either a select or any other SQL statement.
+The result of a select can be stored under a specific id to reuse it in further =SQLFORMAT= statements (see below).
+
+=%<nop>SQL{"query" ...parameter ...}%=
+
+| *Parameter* | *Description* | *Default* |
+| query | sql statement to be executed | | 
+| database | connection to be used | first database in connection pool |
+| id | identifies the query result to be reusable via SQLFORMAT | |
+| decode | values are "url" or "entity"; specifies the encoding of the query before being executed | none |
+| format | format string to render each hit of a search result | =$id= |
+| header | header srting prepended to the rendered result | |
+| footer | footer string appended to the rendered result | |
+| separator | separator to be put in between each hit rendered using the =format= parameter | =,= (comma) |
+| hidenull | values are "on" or "off": flag to hide any rendered result when an sql search returned no hit; =off= means any output will be suppressed when nothing was found; =on= means that a header and footer will always be printed no matter how many hits have been found | =off= |
+| limit | maximum number of search hits to render; a 0 (zero) will render all hits found | 0 |
+| skip | skip the number of hits before starting to render the search result | 0 |
+
+If =format=, =header= and =footer= are all undefined, a standard foswiki-table will be generated.
+
+---+++ SQLFORMAT
+
+Format the result of a previous =%SQL= select.
+
+=%<nop>SQLFORMAT{"id" ...parameter...}%=
+
+| *Parameter* | *Description* | *Default* |
+| id | identifies the result set as given to =%SQL= | |
+| continue | valies are "on" or "off"; when switched on, a previously used statetment in =%SQL= will be reused; if switched off, the statement as specified by the corresponding =%SQL= will be executed again by the database engine | off |
+| =format=, %BR% \
+  =header=, %BR% \
+  =footer=, %BR% \
+  =hidenull=, %BR% \
+  =skip=, %BR% \
+  =limit= | see above | |
+
+The =format= parameter may contain variables of the form =$colname=, where =colname= is the name of the column as returned by an sql select. Standard escapes like =$percnt=, =$nop=, =$n= and =$dollar= can be used in =format=, =header=, =footer= and =separator= to delay the execution on TML until after the =%SQL= statement has finished.
+
+---++ Configuring database connections
+
+Connections to a database are configured by specifying a list of connections in =[[%SCRIPTURLPATH{configure}%][configure]]=. It is stored in an array in the variable =$Foswiki::cfg{SqlPlugin}{Databases}=. 
+
+Example:
+
+<verbatim>
+$Foswiki::cfg{SqlPlugin}{Databases} = [
+  {
+    'id' => 'mysql',
+    'dsn' => 'dbi:mysql:foswiki:localhost',
+    'username' => 'foswiki_user',
+    'password' => 'foswiki_password',
+  },
+  {
+    'id' => 'sqlite',
+    'dsn' => 'dbi:SQLite:dbname=/var/www/foswiki/working/work_areas/SqlPlugin/sqlite.db'
+  },
+  {
+    'id' => 'csv',
+     'dsn' => 'dbi:CSV:f_dir=/vaar/www/foswiki/working/work_areas/SqlPlugin/csv'
+  },
+];
+</verbatim>
+
+This setting configures three connections - known under the ids =mysql=, =sqlite= and =csv= using different drivers.
+The first sets up a connection to a mysql database called "foswiki" on the localhost server, protected by the given user and password settings. The second connects to an sqlite database stored at the given path; the third one connects to a database of CSV files stored at the giveh directory. Note, you will need to make sure that the specified driver in the =dsn= parameter is installed on your system. Please look up the individual driver documentation how to specify a correct value for =dsn=. 
+---++ Installation Instructions
+
+%$INSTALL_INSTRUCTIONS%
+
+---++ Info
+
+|  Author(s): | Foswiki:MichaelDaum|
+|  Copyright: | &copy; 2009-2010 Michael Daum http://michaeldaumconsulting.com |
+|  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
+|  Version: | %$VERSION% |
+|  Release: | %$RELEASE% |
+|  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  Dependencies: | %$DEPENDENCIES% |
+|  Home page: | http://foswiki.org/Extensions/%TOPIC% |
+|  Support page: | http://foswiki.org/Support/%TOPIC% |
+
