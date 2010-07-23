@@ -18,7 +18,7 @@ package Foswiki::Plugins::SqlPlugin;
 use strict;
 
 our $VERSION = '$Rev: 1340 $';
-our $RELEASE = 'v1.0';
+our $RELEASE = '1.01';
 our $SHORTDESCRIPTION = 'SQL interface for Foswiki';
 our $NO_PREFS_IN_TOPIC = 1;
 our $doneInit;

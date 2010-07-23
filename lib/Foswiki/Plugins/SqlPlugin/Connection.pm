@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 # 
-# Copyright (C) 2009 Michael Daum http://michaeldaumconsulting.com
+# Copyright (C) 2009-2010 Michael Daum http://michaeldaumconsulting.com
 #
 # Based on DatabasePlugin Copyright (C) 2002-2007 Tait Cyrus, tait.cyrus@usa.net
 #
@@ -17,7 +17,7 @@
 
 package Foswiki::Plugins::SqlPlugin::Connection;
 
-use DBI;
+use DBI ();
 use strict;
 use Error qw( :try );
 

@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="micha" comment="reprev" date="1270549594" format="1.1" reprev="1.2" version="1.2"}%
+%META:TOPICINFO{author="ProjectContributor" comment="reprev" date="1270549594" format="1.1" reprev="1.2" version="1.2"}%
 ---+!! %TOPIC%
 
 %TOC%
@@ -86,6 +86,7 @@ The first sets up a connection to a mysql database called "foswiki" on the local
 |  Version: | %$VERSION% |
 |  Release: | %$RELEASE% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  14 Jun 2010: | removed hard-coded sort of column keys |
 |  Dependencies: | %$DEPENDENCIES% |
 |  Home page: | http://foswiki.org/Extensions/%TOPIC% |
 |  Support page: | http://foswiki.org/Support/%TOPIC% |

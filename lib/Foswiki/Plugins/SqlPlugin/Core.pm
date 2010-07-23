@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 # 
-# Copyright (C) 2009 Michael Daum http://michaeldaumconsulting.com
+# Copyright (C) 2009-2010 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -78,6 +78,9 @@ sub handleSQL {
   return inlineError("no query") unless defined $theQuery;
 
   my $result = '';
+
+  my $wikiName = Foswiki::Func::getWikiName();
+  Foswiki::Func::writeWarning("User $wikiName has sent query '$theQuery'");
 
   try {
 
@@ -169,16 +172,16 @@ sub handleSQLINFO {
   }
   
   my @result = ();
-  foreach my $id (sort @selectedIds) {
+  foreach my $id (@selectedIds) {
     my $connection = $connections{$id};
     next unless $connection;# ignore
 
     my $line = $theFormat;
     $line =~ s/\$id/$id/g;
     $line =~ s/\$dsn/$connection->{dsn}/g;
-    $line =~ s/\$percnt/\%/go;
     $line =~ s/\$nop//go;
     $line =~ s/\$n/\n/go;
+    $line =~ s/\$perce?nt/\%/go;
     $line =~ s/\$dollar/\$/go;
     push @result, $line;
   }
@@ -203,12 +206,12 @@ sub formatResult {
 
   if (!defined($theFormat) && !defined($theHeader) && !defined($theFooter)) {
     $theHeader = '<table class="foswikiTable"><tr>';
-    foreach my $key (sort @{$sth->{NAME}}) {
+    foreach my $key (@{$sth->{NAME}}) {
       $theHeader .= "<th> $key </th>";
     }
     $theHeader .= '</tr>';
     $theFormat = '<tr>';
-    foreach my $key (sort @{$sth->{NAME}}) {
+    foreach my $key (@{$sth->{NAME}}) {
       $key ||= '';
       $theFormat .= "<td> \$$key </td>";
     }
@@ -224,7 +227,7 @@ sub formatResult {
       next if $theSkip && $index <= $theSkip;
       my $line = $theFormat;
 
-      foreach my $key (sort keys %$res) {
+      foreach my $key (keys %$res) {
         my $val = $res->{$key} || '';
         $line =~ s/\$index/$index/g;
         $line =~ s/\$\Q$key/$val/g;
@@ -240,9 +243,9 @@ sub formatResult {
     $theFooter ||= '';
     $theSeparator ||= '';
     $result = $theHeader.join($theSeparator, @lines).$theFooter;
-    $result =~ s/\$perce?nt/\%/go;
     $result =~ s/\$nop//go;
     $result =~ s/\$n/\n/go;
+    $result =~ s/\$perce?nt/\%/go;
     $result =~ s/\$dollar/\$/go;
   }
 
