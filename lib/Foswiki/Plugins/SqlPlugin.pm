@@ -1,5 +1,5 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
-# 
+#
 # Copyright (C) 2009-2010 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +17,9 @@ package Foswiki::Plugins::SqlPlugin;
 
 use strict;
 
-our $VERSION = '$Rev: 1340 $';
-our $RELEASE = '1.01';
-our $SHORTDESCRIPTION = 'SQL interface for Foswiki';
+our $VERSION           = '$Rev: 1340 $';
+our $RELEASE           = '1.01';
+our $SHORTDESCRIPTION  = 'SQL interface for Foswiki';
 our $NO_PREFS_IN_TOPIC = 1;
 our $doneInit;
 our $baseWeb;
@@ -27,46 +27,46 @@ our $baseTopic;
 
 ##############################################################################
 sub initPlugin {
-  ($baseTopic, $baseWeb) = @_;
+    ( $baseTopic, $baseWeb ) = @_;
 
-  Foswiki::Func::registerTagHandler('SQL', \&handleSQL);
-  Foswiki::Func::registerTagHandler('SQLFORMAT', \&handleSQLFORMAT);
-  Foswiki::Func::registerTagHandler('SQLINFO', \&handleSQLINFO);
+    Foswiki::Func::registerTagHandler( 'SQL',       \&handleSQL );
+    Foswiki::Func::registerTagHandler( 'SQLFORMAT', \&handleSQLFORMAT );
+    Foswiki::Func::registerTagHandler( 'SQLINFO',   \&handleSQLINFO );
 
-  $doneInit = 0;
-  return 1;
+    $doneInit = 0;
+    return 1;
 }
 
 ###############################################################################
 sub init {
-  return if $doneInit;
-  $doneInit = 1;
-  require Foswiki::Plugins::SqlPlugin::Core;
-  Foswiki::Plugins::SqlPlugin::Core::init($baseWeb, $baseTopic);
+    return if $doneInit;
+    $doneInit = 1;
+    require Foswiki::Plugins::SqlPlugin::Core;
+    Foswiki::Plugins::SqlPlugin::Core::init( $baseWeb, $baseTopic );
 }
 
 ###############################################################################
 sub finishPlugin {
-  return unless $doneInit;
-  Foswiki::Plugins::SqlPlugin::Core::finish(@_);
+    return unless $doneInit;
+    Foswiki::Plugins::SqlPlugin::Core::finish(@_);
 }
 
 ##############################################################################
 sub handleSQL {
-  init();
-  Foswiki::Plugins::SqlPlugin::Core::handleSQL(@_);
+    init();
+    Foswiki::Plugins::SqlPlugin::Core::handleSQL(@_);
 }
 
 ##############################################################################
 sub handleSQLFORMAT {
-  init();
-  Foswiki::Plugins::SqlPlugin::Core::handleSQLFORMAT(@_);
+    init();
+    Foswiki::Plugins::SqlPlugin::Core::handleSQLFORMAT(@_);
 }
 
 ##############################################################################
 sub handleSQLINFO {
-  init();
-  Foswiki::Plugins::SqlPlugin::Core::handleSQLINFO(@_);
+    init();
+    Foswiki::Plugins::SqlPlugin::Core::handleSQLINFO(@_);
 }
 
 1;
