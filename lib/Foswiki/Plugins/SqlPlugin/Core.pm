@@ -1,5 +1,5 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
-#
+# 
 # Copyright (C) 2009-2010 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,6 +18,7 @@ package Foswiki::Plugins::SqlPlugin::Core;
 use strict;
 use Foswiki::Plugins::SqlPlugin::Connection ();
 use Error qw( :try );
+use Foswiki::Sandbox ();
 
 our $baseWeb;
 our $baseTopic;
@@ -25,254 +26,249 @@ our %connections;
 our %cache;
 our $defaultDatabase;
 
-use constant DEBUG => 0;    # toggle me
+use constant DEBUG => 0; # toggle me
 
 ###############################################################################
 sub writeDebug {
-    print STDERR "- SqlPlugin::Core - $_[0]\n" if DEBUG;
+  print STDERR "- SqlPlugin::Core - $_[0]\n" if DEBUG;
 }
 
 ##############################################################################
 sub init {
-    ( $baseWeb, $baseTopic ) = @_;
+  ($baseWeb, $baseTopic) = @_;
 
-    foreach my $desc ( @{ $Foswiki::cfg{SqlPlugin}{Databases} } ) {
-        my $connection = new Foswiki::Plugins::SqlPlugin::Connection(%$desc);
-        $connections{ $desc->{id} } = $connection;
-        $defaultDatabase = $desc->{id} unless $defaultDatabase;
-    }
+  foreach my $desc (@{$Foswiki::cfg{SqlPlugin}{Databases}}) {
+    my $connection = new Foswiki::Plugins::SqlPlugin::Connection(%$desc);
+    $connections{$desc->{id}} = $connection;
+    $defaultDatabase = $desc->{id} unless $defaultDatabase;
+  }
 }
 
 ##############################################################################
 sub finish {
-    undef %connections;
-    undef %cache;
+  undef %connections;
+  undef %cache;
 }
 
 ##############################################################################
 sub inlineError {
-    my $msg = shift;
+  my $msg = shift;
 
-    return
-      "<noautolink><span class='foswikiAlert'>ERROR: $msg </span></noautolink>";
+  return "<noautolink><span class='foswikiAlert'>ERROR: $msg </span></noautolink>";
 }
 
 ##############################################################################
 sub handleSQL {
-    my ( $session, $params, $theTopic, $theWeb ) = @_;
+  my ($session, $params, $theTopic, $theWeb) = @_;
 
-    #writeDebug("called handleSQL()");
+  #writeDebug("called handleSQL()");
 
-    my $theDatabase = $params->{database} || $defaultDatabase;
-    my $theId       = $params->{id};
-    my $theQuery    = $params->{_DEFAULT} || $params->{query};
-    my $theDecode   = $params->{decode} || '';
+  my $theDatabase = $params->{database} || $defaultDatabase;
+  my $theId = $params->{id};
+  my $theQuery = $params->{_DEFAULT} || $params->{query};
+  my $theDecode = $params->{decode} || '';
 
-    if ( $theDecode eq 'url' ) {
-        $theQuery = urlDecode($theQuery);
+  if ($theDecode eq 'url') {
+    $theQuery = urlDecode($theQuery);
+  } elsif ($theDecode eq 'entity') {
+    $theQuery = entityDecode($theQuery);
+  }
+
+  my $connection = $connections{$theDatabase};
+  return inlineError("unknown database '$theDatabase'") unless $connection;
+  return inlineError("no query") unless defined $theQuery;
+
+  my $result = '';
+
+  my $wikiName = Foswiki::Func::getWikiName();
+  my $message = $theQuery;
+  $message =~ s/\n/ /g; # remove newlines
+  Foswiki::Func::writeEvent("sql", $message);
+
+  try {
+
+    $connection->connect();
+    $theQuery =~ m/(.*)/;
+    $theQuery = $1;
+    
+    my $sth = $connection->{db}->prepare_cached($theQuery) or
+      throw Error::Simple("Can't prepare cmd '$theQuery': ".$connection->{db}->errstr);
+
+    $sth->execute or 
+      throw Error::Simple("Can't execute cmd '$theQuery': ".$connection->{db}->errstr);
+
+    # cache this statement under the given id
+    $cache{$theId} = {
+      sth => $sth,
+      connection => $connection,
+    } if $theId;
+
+    if($sth->{NUM_OF_FIELDS}) {
+      # select statement
+      $result = formatResult($params, $sth);
+    } else {
+      # non-select statement
+      $result = $sth->rows();
     }
-    elsif ( $theDecode eq 'entity' ) {
-        $theQuery = entityDecode($theQuery);
-    }
 
-    my $connection = $connections{$theDatabase};
-    return inlineError("unknown database '$theDatabase'") unless $connection;
-    return inlineError("no query") unless defined $theQuery;
 
-    my $result = '';
+  } catch Error::Simple with {
+    my $msg = shift->{-text};
+    #$msg =~ s/ at .*?$//gs;
+    $result = inlineError($msg);
+  };
 
-    my $wikiName = Foswiki::Func::getWikiName();
-    Foswiki::Func::writeWarning("User $wikiName has sent query '$theQuery'");
+  #writeDebug("result=$result");
 
-    try {
-
-        $connection->connect();
-        my $sth = $connection->{db}->prepare_cached($theQuery)
-          or throw Error::Simple(
-            "Can't prepare cmd '$theQuery': " . $connection->{db}->errstr );
-
-        $sth->execute
-          or throw Error::Simple(
-            "Can't execute cmd '$theQuery': " . $connection->{db}->errstr );
-
-        # cache this statement under the given id
-        $cache{$theId} = {
-            sth        => $sth,
-            connection => $connection,
-        } if $theId;
-
-        if ( $sth->{NUM_OF_FIELDS} ) {
-
-            # select statement
-            $result = formatResult( $params, $sth );
-        }
-        else {
-
-            # non-select statement
-            $result = $sth->rows();
-        }
-
-    }
-    catch Error::Simple with {
-        my $msg = shift->{-text};
-        $msg =~ s/ at .*?$//gs;
-        $result = inlineError($msg);
-    };
-
-    #writeDebug("result=$result");
-
-    return $result;
+  return $result;
 }
 
 ##############################################################################
 sub handleSQLFORMAT {
 
-    my ( $session, $params, $theTopic, $theWeb ) = @_;
+  my ($session, $params, $theTopic, $theWeb) = @_;
 
-    my $theId       = $params->{_DEFAULT}   || $params->{id};
-    my $theContinue = $params->{'continue'} || 'off';
-    $theContinue = ( $theContinue eq 'on' ) ? 1 : 0;
+  my $theId = $params->{_DEFAULT} || $params->{id};
+  my $theContinue = $params->{'continue'} || 'off';
+  $theContinue = ($theContinue eq 'on')?1:0;
 
-    my $entry = $cache{$theId};
+  my $entry = $cache{$theId};
 
-    return inlineError("unknown statement '$theId'") unless defined $entry;
-    my $sth        = $entry->{sth};
-    my $connection = $entry->{connection};
+  return inlineError("unknown statement '$theId'") unless defined $entry;
+  my $sth = $entry->{sth};
+  my $connection = $entry->{connection};
+  
+  my $result = '';
 
-    my $result = '';
+  try {
 
-    try {
-
-        unless ($theContinue) {
-            $sth->execute
-              or throw Error::Simple(
-                "Can't execute again: " . $connection->{db}->errstr );
-        }
-
-        $result = formatResult( $params, $sth );
+    unless ($theContinue) {
+      $sth->execute or 
+        throw Error::Simple("Can't execute again: ".$connection->{db}->errstr);
     }
-    catch Error::Simple with {
-        my $msg = shift->{-text};
-        $msg =~ s/ at .*?$//gs;
-        $result = inlineError($msg);
-    };
 
-    return $result;
+    $result = formatResult($params, $sth);
+  } catch Error::Simple with {
+    my $msg = shift->{-text};
+    $msg =~ s/ at .*?$//gs;
+    $result = inlineError($msg);
+  };
+
+  return $result;
 }
 
 ##############################################################################
 sub handleSQLINFO {
-    my ( $session, $params, $theTopic, $theWeb ) = @_;
+  my ($session, $params, $theTopic, $theWeb) = @_;
 
-    my $theDatabase = $params->{_DEFAULT} || $params->{database};
-    my $theFormat   = $params->{format}   || '$id';
-    my $theSeparator = $params->{separator};
-    my $theHeader    = $params->{header} || '';
-    my $theFooter    = $params->{footer} || '';
+  my $theDatabase = $params->{_DEFAULT} || $params->{database};
+  my $theFormat = $params->{format} || '$id';
+  my $theSeparator = $params->{separator};
+  my $theHeader = $params->{header} || '';
+  my $theFooter = $params->{footer} || '';
 
-    $theSeparator = ', ' unless defined $theSeparator;
+  $theSeparator = ', ' unless defined $theSeparator;
 
-    my @selectedIds = ();
+  my @selectedIds = ();
 
-    if ($theDatabase) {
-        push @selectedIds, split( /\s*,\s*/, $theDatabase );
-    }
-    else {
-        push @selectedIds, keys %connections;
-    }
+  if ($theDatabase) {
+    push @selectedIds, split(/\s*,\s*/, $theDatabase);
+  } else {
+    push @selectedIds, keys %connections;
+  }
+  
+  my @result = ();
+  foreach my $id (@selectedIds) {
+    my $connection = $connections{$id};
+    next unless $connection;# ignore
 
-    my @result = ();
-    foreach my $id (@selectedIds) {
-        my $connection = $connections{$id};
-        next unless $connection;    # ignore
+    my $line = $theFormat;
+    $line =~ s/\$id/$id/g;
+    $line =~ s/\$dsn/$connection->{dsn}/g;
+    $line =~ s/\$nop//go;
+    $line =~ s/\$n/\n/go;
+    $line =~ s/\$perce?nt/\%/go;
+    $line =~ s/\$dollar/\$/go;
+    push @result, $line;
+  }
 
-        my $line = $theFormat;
-        $line =~ s/\$id/$id/g;
-        $line =~ s/\$dsn/$connection->{dsn}/g;
-        $line =~ s/\$nop//go;
-        $line =~ s/\$n/\n/go;
-        $line =~ s/\$perce?nt/\%/go;
-        $line =~ s/\$dollar/\$/go;
-        push @result, $line;
-    }
-
-    return '' unless @result;
-    return $theHeader . join( $theSeparator, @result ) . $theFooter;
+  return '' unless @result;
+  return $theHeader.join($theSeparator, @result).$theFooter;
 }
+
 
 ##############################################################################
 sub formatResult {
-    my ( $params, $sth ) = @_;
+  my ($params, $sth) = @_;
+  
+  my $theFormat = $params->{format};
+  my $theHeader = $params->{header};
+  my $theFooter = $params->{footer};
+  my $theSeparator = $params->{separator};
+  my $theHidenull = $params->{hidenull} || 'off';
+  $theHidenull = ($theHidenull eq 'on')?1:0;
+  my $theLimit = $params->{limit} || 0;
+  my $theSkip = $params->{skip} || 0;
 
-    my $theFormat    = $params->{format};
-    my $theHeader    = $params->{header};
-    my $theFooter    = $params->{footer};
-    my $theSeparator = $params->{separator};
-    my $theHidenull  = $params->{hidenull} || 'off';
-    $theHidenull = ( $theHidenull eq 'on' ) ? 1 : 0;
-    my $theLimit = $params->{limit} || 0;
-    my $theSkip  = $params->{skip}  || 0;
-
-    if ( !defined($theFormat) && !defined($theHeader) && !defined($theFooter) )
-    {
-        $theHeader = '<table class="foswikiTable"><tr>';
-        foreach my $key ( @{ $sth->{NAME} } ) {
-            $theHeader .= "<th> $key </th>";
-        }
-        $theHeader .= '</tr>';
-        $theFormat = '<tr>';
-        foreach my $key ( @{ $sth->{NAME} } ) {
-            $key ||= '';
-            $theFormat .= "<td> \$$key </td>";
-        }
-        $theFormat .= '</tr>';
-        $theFooter = '</table>';
+  if (!defined($theFormat) && !defined($theHeader) && !defined($theFooter)) {
+    $theHeader = '<table class="foswikiTable"><tr>';
+    foreach my $key (@{$sth->{NAME}}) {
+      $theHeader .= "<th> $key </th>";
     }
-
-    my @lines = ();
-    if ($theFormat) {
-        my $index = 0;
-        while ( my $res = $sth->fetchrow_hashref() ) {
-            $index++;
-            next if $theSkip && $index <= $theSkip;
-            my $line = $theFormat;
-
-            foreach my $key ( keys %$res ) {
-                my $val = $res->{$key} || '';
-                $line =~ s/\$index/$index/g;
-                $line =~ s/\$\Q$key/$val/g;
-            }
-            push @lines, $line;
-            last if $theLimit && $index >= $theLimit;
-        }
+    $theHeader .= '</tr>';
+    $theFormat = '<tr>';
+    foreach my $key (@{$sth->{NAME}}) {
+      $key ||= '';
+      $theFormat .= "<td> \$$key </td>";
     }
+    $theFormat .= '</tr>';
+    $theFooter = '</table>'
+  }
 
-    my $result = '';
-    if ( !$theHidenull || @lines ) {
-        $theHeader    ||= '';
-        $theFooter    ||= '';
-        $theSeparator ||= '';
-        $result = $theHeader . join( $theSeparator, @lines ) . $theFooter;
-        $result =~ s/\$nop//go;
-        $result =~ s/\$n/\n/go;
-        $result =~ s/\$perce?nt/\%/go;
-        $result =~ s/\$dollar/\$/go;
+  my @lines = ();
+  if ($theFormat) {
+    my $index = 0;
+    while (my $res = $sth->fetchrow_hashref() ) {
+      $index++;
+      next if $theSkip && $index <= $theSkip;
+      my $line = $theFormat;
+
+      foreach my $key (keys %$res) {
+        my $val = $res->{$key} || '';
+        $line =~ s/\$index/$index/g;
+        $line =~ s/\$\Q$key/$val/g;
+      }
+      push @lines, $line;
+      last if $theLimit && $index >= $theLimit;
     }
+  }
 
-    return $result;
+  my $result = '';
+  if (!$theHidenull || @lines) {
+    $theHeader ||= '';
+    $theFooter ||= '';
+    $theSeparator ||= '';
+    $result = $theHeader.join($theSeparator, @lines).$theFooter;
+    $result =~ s/\$nop//go;
+    $result =~ s/\$n/\n/go;
+    $result =~ s/\$perce?nt/\%/go;
+    $result =~ s/\$dollar/\$/go;
+  }
+
+  return $result;
 }
 
 sub urlDecode {
-    my $text = shift;
-    $text =~ s/%([\da-f]{2})/chr(hex($1))/gei;
-    return $text;
+  my $text = shift;
+  $text =~ s/%([\da-f]{2})/chr(hex($1))/gei;
+  return $text;
 }
 
 sub entityDecode {
-    my $text = shift;
+  my $text = shift;
 
-    $text =~ s/&#(\d+);/chr($1)/ge;
-    return $text;
+  $text =~ s/&#(\d+);/chr($1)/ge;
+  return $text;
 }
 
 1;
