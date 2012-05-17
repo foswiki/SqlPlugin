@@ -18,7 +18,7 @@ package Foswiki::Plugins::SqlPlugin;
 use strict;
 
 our $VERSION = '$Rev: 1340 $';
-our $RELEASE = '1.01';
+our $RELEASE = '1.02';
 our $SHORTDESCRIPTION = 'SQL interface for Foswiki';
 our $NO_PREFS_IN_TOPIC = 1;
 our $doneInit;
@@ -67,6 +67,24 @@ sub handleSQLFORMAT {
 sub handleSQLINFO {
   init();
   Foswiki::Plugins::SqlPlugin::Core::handleSQLINFO(@_);
+}
+
+=begin TML
+---++ StaticMethod execute($dbconn, $query, @bindvals) -> $sth
+
+Executes the provided $query and returns a DBI Statement handle.  It is the 
+caller's responsibility to call $sth->finish after processing is complete.
+
+   $ $dbconn: The database connection defined in the configure screen.
+   $ $query: The SQL query to be run, possibly with placeholders (?).
+   $ @bindvals: An OPTIONAL list of values to be applied.  Only needed if $query has placeholders.
+
+Throws Error::Simple on errors.
+
+=cut
+sub execute {
+  init();
+  Foswiki::Plugins::SqlPlugin::Core::handleExecute(@_);
 }
 
 1;

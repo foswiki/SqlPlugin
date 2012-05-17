@@ -20,3 +20,30 @@ $Foswiki::cfg{SqlPlugin}{Databases} =
       password => 'foswiki_password',
    },
 ];
+
+# **PERL**
+# <h3>Access Control</h3>
+# Security Configuration.
+# This structure is an array of hashes, each of which contains a list of
+# queries that are allowed to be run.  Each item in the query list is evaluated as a regular expression
+# to see if the query matches, and also evaluated for exact string equality to see if the query matches.
+# For both of these checks, the input string is converted to ALL UPPERCASE, and all whitespace is
+# transformed into a single space.
+# If a database connection has no items defined here, then all queries are permitted.
+# Either 'who' or 'queries' can be omitted, but not both.
+# <ul>
+# <li> id - same identifier as in the Databases configuration section.</li>
+# <li> who - User or Group name.</li>
+# <li> queries - List of queries.</li>
+# </ul>
+$Foswiki::cfg{SqlPlugin}{AccessControl} =
+[
+   {
+      id => 'foswiki',
+      who => 'WikiUserOrGroup',
+      queries => [
+                      'SELECT * FROM TABLE1',
+                      'UPDATE TABLE1'
+                 ]
+   },
+];

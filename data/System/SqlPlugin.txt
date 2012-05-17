@@ -16,6 +16,7 @@ The result of a select can be stored under a specific id to reuse it in further 
 
 | *Parameter* | *Description* | *Default* |
 | query | sql statement to be executed | | 
+| params | comma separated list of bind parameters for placeholders (?) in query | | 
 | database | connection to be used | first database in connection pool |
 | id | identifies the query result to be reusable via SQLFORMAT | |
 | decode | values are "url" or "entity"; specifies the encoding of the query before being executed | none |
@@ -74,6 +75,34 @@ $Foswiki::cfg{SqlPlugin}{Databases} = [
 
 This setting configures three connections - known under the ids =mysql=, =sqlite= and =csv= using different drivers.
 The first sets up a connection to a mysql database called "foswiki" on the localhost server, protected by the given user and password settings. The second connects to an sqlite database stored at the given path; the third one connects to a database of CSV files stored at the giveh directory. Note, you will need to make sure that the specified driver in the =dsn= parameter is installed on your system. Please look up the individual driver documentation how to specify a correct value for =dsn=. 
+
+---++ Securing database access
+
+Underneath the database connections section in =[[%SCRIPTURLPATH{configure}%][configure]]=, there is a section to configure access control.
+Access can be restricted by wiki user / group, by a 'whitelist' of permitted queries, or both.  If no access control is specified for
+a database connection, then all access is allowed for that connection.
+
+Here is an example.  Note that the first element of the =queries= list is a regular expression, and
+the rest of the entries are literal string matches.
+
+<verbatim>
+[
+  {
+    'who' => 'KipLubliner',
+    'id' => 'mysql',
+    'queries' => [
+      'SELECT [^;]+',
+      'UPDATE TEAM SET TM_NAME = ? WHERE TMID = ?',
+      'UPDATE PLAYER SET PL_NICKNAME = ?, PL_FIRSTNAME = ?, PL_LASTNAME = ?, PL_TEAM = ? WHERE PLID = ?',
+      'INSERT INTO TEAM( TM_NAME ) VALUES (?)',
+      'INSERT INTO PLAYER( PL_NICKNAME, PL_FIRSTNAME, PL_LASTNAME, PL_TEAM ) VALUES (?, ?, ?, ?)'
+    ]
+  }
+];
+</verbatim>
+
+See the integrated documentation on the configure screen for more details.
+
 ---++ Installation Instructions
 
 %$INSTALL_INSTRUCTIONS%
