@@ -118,6 +118,7 @@ See the integrated documentation on the configure screen for more details.
 |  Version: | %$VERSION% |
 |  Release: | %$RELEASE% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  18 May 2012: | (1.02) Added bind parameters, access control, perl API.  (Foswiki:Main/KipLubliner) |
 |  14 Jun 2010: | removed hard-coded sort of column keys |
 |  Dependencies: | %$DEPENDENCIES% |
 |  Home page: | http://foswiki.org/Extensions/%TOPIC% |
