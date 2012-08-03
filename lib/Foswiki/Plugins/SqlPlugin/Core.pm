@@ -32,6 +32,7 @@ use constant DEBUG => 0; # toggle me
 ###############################################################################
 sub writeDebug {
   print STDERR "- SqlPlugin::Core - $_[0]\n" if DEBUG;
+#  Foswiki::Func::writeDebug("SqlPlugin::Core", $_[0]);
 }
 
 ##############################################################################
@@ -68,6 +69,7 @@ sub finish {
 ##############################################################################
 sub inlineError {
   my $msg = shift;
+  $msg =~ s/\%/&#37;/g;
 
   return "<noautolink><span class='foswikiAlert'>ERROR: $msg </span></noautolink>";
 }
@@ -98,9 +100,9 @@ sub handleExecute {
 sub handleSQL {
   my ($session, $params, $theTopic, $theWeb) = @_;
 
-  #writeDebug("called handleSQL()");
-
-  my $theDatabase = $params->{database} || $defaultDatabase;
+  my $theDatabase = exists $params->{database}
+    ? $params->{database}
+    : $defaultDatabase;
   my $theId = $params->{id};
   my $theQuery = $params->{_DEFAULT} || $params->{query};
   my $theParams = $params->{params} || '';
@@ -111,6 +113,8 @@ sub handleSQL {
   } elsif ($theDecode eq 'entity') {
     $theQuery = entityDecode($theQuery);
   }
+
+  #writeDebug("called handleSQL(" . $theQuery . ")");
 
   my @bindVals = split '\s*,\s*', $theParams;
 
@@ -155,7 +159,7 @@ sub handleSQL {
 
   } catch Error::Simple with {
     my $msg = shift->{-text};
-    #$msg =~ s/ at .*?$//gs;
+    $msg =~ s/ at .*?$//gs;
     $result = inlineError($msg);
   };
 
