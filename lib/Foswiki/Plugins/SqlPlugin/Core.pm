@@ -114,7 +114,7 @@ sub handleSQL {
     $theQuery = entityDecode($theQuery);
   }
 
-  #writeDebug("called handleSQL(" . $theQuery . ")");
+  #writeDebug("called handleSQL() - " . $theQuery);
 
   my @bindVals = split '\s*,\s*', $theParams;
 
@@ -133,9 +133,7 @@ sub handleSQL {
     checkAccess($theDatabase, $theQuery);
 
     $connection->connect();
-    $theQuery =~ m/(.*)/;
-    $theQuery = $1;
-    
+
     my $sth = $connection->{db}->prepare_cached($theQuery) or
       throw Error::Simple("Can't prepare cmd '$theQuery': ".$connection->{db}->errstr);
 
@@ -160,6 +158,7 @@ sub handleSQL {
   } catch Error::Simple with {
     my $msg = shift->{-text};
     $msg =~ s/ at .*?$//gs;
+    $msg .= "<br>for query $theQuery";
     $result = inlineError($msg);
   };
 
