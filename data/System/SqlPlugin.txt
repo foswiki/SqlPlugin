@@ -126,7 +126,7 @@ The behavior when the database parameter is omitted is unchanged.
 |  Version: | %$VERSION% |
 |  Release: | %$RELEASE% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
-|  5 Aug 2012:  | (1.03) Fix Foswiki:Tasks/Item12029 - more robust 'database' param handling <br> Foswiki:Tasks/Item12030 - DB errors cause unintended SQL calls <br> Foswiki:Tasks/Item12018 - queries spread across multiple lines   (Foswiki:Main/KipLubliner) |
+|  5 Aug 2012:  | (1.03) Fix Foswiki:Tasks/Item12029 - more robust 'database' param handling <br> Foswiki:Tasks/Item12030 - DB errors cause unintended SQL calls <br> Foswiki:Tasks/Item12018 - queries spread across multiple lines <br> Foswiki:Tasks/Item12033 - also log access from API and log access control failures (Foswiki:Main/KipLubliner) |
 |  18 May 2012: | (1.02) Added bind parameters, access control, perl API.  (Foswiki:Main/KipLubliner) |
 |  14 Jun 2010: | removed hard-coded sort of column keys |
 |  Dependencies: | %$DEPENDENCIES% |
