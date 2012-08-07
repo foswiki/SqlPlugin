@@ -124,11 +124,6 @@ sub handleSQL {
 
   my $result = '';
 
-  my $wikiName = Foswiki::Func::getWikiName();
-  my $message = $theQuery;
-  $message =~ s/\n/ /g; # remove newlines
-  Foswiki::Func::writeEvent("sql", $message);
-
   try {
     checkAccess($theDatabase, $theQuery);
 
@@ -308,9 +303,26 @@ sub formatResult {
 ##############################################################################
 sub checkAccess {
   my ($theDatabase, $theQuery) = @_;
+  my $ret = _checkAccess(@_);
+
+  my $message = $theQuery;
+  $message =~ s/\n/ /g; # remove newlines
+  if (! $ret) {
+    $message .= " [ACCESS DENIED]";
+  }
+  Foswiki::Func::writeEvent("sql", $message);
+
+  if (! $ret) {
+    Foswiki::Func::writeWarning("SqlPlugin", "Access control check failed on database '$theDatabase' for query '$theQuery'");
+    throw Error::Simple("Access control check failed on database $theDatabase for query $theQuery");
+  }
+}
+
+sub _checkAccess {
+  my ($theDatabase, $theQuery) = @_;
 
   if (! %accessControls || ! exists $accessControls{$theDatabase}) {
-    return;
+    return 1;
   }
 
   my $user = Foswiki::Func::getWikiName();
@@ -352,12 +364,11 @@ sub checkAccess {
     }
 
     if ($whoPasses && $queryPasses) {
-      return;
+      return 1;
     }
   }
 
-  Foswiki::Func::writeWarning("SqlPlugin", "Access control check failed on database '$theDatabase' for query '$theQuery'");
-  throw Error::Simple("Access control check failed on database $theDatabase for query $theQuery");
+  return undef;
 }
 
 
