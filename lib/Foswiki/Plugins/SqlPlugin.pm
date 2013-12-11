@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 # 
-# Copyright (C) 2009-2010 Michael Daum http://michaeldaumconsulting.com
+# Copyright (C) 2009-2013 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -16,9 +16,10 @@
 package Foswiki::Plugins::SqlPlugin;
 
 use strict;
+use warnings;
 
-our $VERSION = '$Rev$';
-our $RELEASE = '1.03';
+our $VERSION = '1.04';
+our $RELEASE = '1.04';
 our $SHORTDESCRIPTION = 'SQL interface for Foswiki';
 our $NO_PREFS_IN_TOPIC = 1;
 our $doneInit;
@@ -54,19 +55,19 @@ sub finishPlugin {
 ##############################################################################
 sub handleSQL {
   init();
-  Foswiki::Plugins::SqlPlugin::Core::handleSQL(@_);
+  return Foswiki::Plugins::SqlPlugin::Core::handleSQL(@_);
 }
 
 ##############################################################################
 sub handleSQLFORMAT {
   init();
-  Foswiki::Plugins::SqlPlugin::Core::handleSQLFORMAT(@_);
+  return Foswiki::Plugins::SqlPlugin::Core::handleSQLFORMAT(@_);
 }
 
 ##############################################################################
 sub handleSQLINFO {
   init();
-  Foswiki::Plugins::SqlPlugin::Core::handleSQLINFO(@_);
+  return Foswiki::Plugins::SqlPlugin::Core::handleSQLINFO(@_);
 }
 
 =begin TML
@@ -84,7 +85,7 @@ Throws Error::Simple on errors.
 =cut
 sub execute {
   init();
-  Foswiki::Plugins::SqlPlugin::Core::handleExecute(@_);
+  return Foswiki::Plugins::SqlPlugin::Core::handleExecute(@_);
 }
 
 1;

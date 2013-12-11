@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="reprev" date="1270549594" format="1.1" reprev="1.2" version="1.2"}%
+%META:TOPICINFO{author="ProjectContributor" comment="autosave" date="1356278780" format="1.1" version="4"}%
 ---+!! %TOPIC%
 
 %TOC%
@@ -121,15 +121,17 @@ The behavior when the database parameter is omitted is unchanged.
 -->
 
 |  Author(s): | Foswiki:MichaelDaum|
-|  Copyright: | &copy; 2009-2010 Michael Daum http://michaeldaumconsulting.com 2012 Kip Lubliner |
+|  Copyright: | &copy; 2009-2013 Michael Daum http://michaeldaumconsulting.com, 2012 Kip Lubliner |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
 |  Version: | %$VERSION% |
 |  Release: | %$RELEASE% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
-|  5 Aug 2012:  | (1.03) Fix Foswiki:Tasks/Item12029 - more robust 'database' param handling <br> Foswiki:Tasks/Item12030 - DB errors cause unintended SQL calls <br> Foswiki:Tasks/Item12018 - queries spread across multiple lines <br> Foswiki:Tasks/Item12033 - also log access from API and log access control failures (Foswiki:Main/KipLubliner) |
+|  5 Aug 2012:  | (1.03) Foswiki:Tasks/Item12029 - more robust 'database' param handling <br>\
+                         Foswiki:Tasks/Item12030 - DB errors cause unintended SQL calls <br>\
+                         Foswiki:Tasks/Item12018 - queries spread across multiple lines <br>\
+                         Foswiki:Tasks/Item12033 - also log access from API and log access control failures (Foswiki:Main/KipLubliner) |
 |  18 May 2012: | (1.02) Added bind parameters, access control, perl API.  (Foswiki:Main/KipLubliner) |
 |  14 Jun 2010: | removed hard-coded sort of column keys |
 |  Dependencies: | %$DEPENDENCIES% |
 |  Home page: | http://foswiki.org/Extensions/%TOPIC% |
 |  Support page: | http://foswiki.org/Support/%TOPIC% |
-
