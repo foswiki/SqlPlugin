@@ -121,14 +121,17 @@ The behavior when the database parameter is omitted is unchanged.
 -->
 
 |  Author(s): | Foswiki:MichaelDaum|
-|  Copyright: | &copy; 2009-2013 Michael Daum http://michaeldaumconsulting.com, 2012 Kip Lubliner |
+|  Copyright: | &copy; 2009-2014 Michael Daum http://michaeldaumconsulting.com |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
 |  Version: | %$VERSION% |
 |  Release: | %$RELEASE% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
-|  5 Aug 2012:  | (1.03) Foswiki:Tasks/Item12029 - more robust 'database' param handling <br>\
-                         Foswiki:Tasks/Item12030 - DB errors cause unintended SQL calls <br>\
-                         Foswiki:Tasks/Item12018 - queries spread across multiple lines <br>\
+|  29 Jan 2014: | (1.99) Foswiki:Tasks/Item12245 - enhance handing of bind parameters (Foswiki:Main/FrankHoellering) %BR% \
+                         Foswiki:Tasks/Item12236 - cache bind values to be reused in =continue= mode (Foswiki:Main/FrankHoellering) %BR% \
+                         Foswiki:Tasks/Item12737 - fix oracle long column type (Foswiki:Main/HansJosefKoehler) |
+|  5 Aug 2012:  | (1.03) Foswiki:Tasks/Item12029 - more robust 'database' param handling %BR% \
+                         Foswiki:Tasks/Item12030 - DB errors cause unintended SQL calls %BR% \
+                         Foswiki:Tasks/Item12018 - queries spread across multiple lines %BR% \
                          Foswiki:Tasks/Item12033 - also log access from API and log access control failures (Foswiki:Main/KipLubliner) |
 |  18 May 2012: | (1.02) Added bind parameters, access control, perl API.  (Foswiki:Main/KipLubliner) |
 |  14 Jun 2010: | removed hard-coded sort of column keys |

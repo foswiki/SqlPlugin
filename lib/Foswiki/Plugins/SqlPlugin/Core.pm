@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 # 
-# Copyright (C) 2009-2010 Michael Daum http://michaeldaumconsulting.com
+# Copyright (C) 2009-2014 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,6 +19,7 @@ use strict;
 use Foswiki::Plugins::SqlPlugin::Connection ();
 use Error qw( :try );
 use Foswiki::Sandbox ();
+use Text::ParseWords ();
 
 our $baseWeb;
 our $baseTopic;
@@ -116,7 +117,7 @@ sub handleSQL {
 
   #writeDebug("called handleSQL() - " . $theQuery);
 
-  my @bindVals = split '\s*,\s*', $theParams;
+  my @bindVals = Text::ParseWords::parse_line('\s*,\s*', 0, $theParams);
 
   my $connection = $connections{$theDatabase};
   return inlineError("unknown database '$theDatabase'") unless $connection;
@@ -139,6 +140,7 @@ sub handleSQL {
     $cache{$theId} = {
       sth => $sth,
       connection => $connection,
+      bindVals => \@bindVals,
     } if $theId;
 
     if($sth->{NUM_OF_FIELDS}) {
@@ -153,7 +155,7 @@ sub handleSQL {
   } catch Error::Simple with {
     my $msg = shift->{-text};
     $msg =~ s/ at .*?$//gs;
-    $msg .= "<br>for query $theQuery";
+    $msg .= "<br />for query $theQuery";
     $result = inlineError($msg);
   };
 
@@ -169,25 +171,26 @@ sub handleSQLFORMAT {
 
   my $theId = $params->{_DEFAULT} || $params->{id};
   my $theContinue = $params->{'continue'} || 'off';
-  $theContinue = ($theContinue eq 'on')?1:0;
+  $theContinue = ($theContinue eq 'on') ? 1 : 0;
 
   my $entry = $cache{$theId};
 
   return inlineError("unknown statement '$theId'") unless defined $entry;
   my $sth = $entry->{sth};
   my $connection = $entry->{connection};
-  
+  my $bindVals = $entry->{bindVals};
+
   my $result = '';
 
   try {
-
     unless ($theContinue) {
-      $sth->execute or 
-        throw Error::Simple("Can't execute again: ".$connection->{db}->errstr);
+      ($bindVals ? $sth->execute(@{$bindVals}) : $sth->execute)
+        or throw Error::Simple("Can't execute again: " . $connection->{db}->errstr);
     }
 
     $result = formatResult($params, $sth);
-  } catch Error::Simple with {
+  }
+  catch Error::Simple with {
     my $msg = shift->{-text};
     $msg =~ s/ at .*?$//gs;
     $result = inlineError($msg);

@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 # 
-# Copyright (C) 2009-2010 Michael Daum http://michaeldaumconsulting.com
+# Copyright (C) 2009-2014 Michael Daum http://michaeldaumconsulting.com
 #
 # Based on DatabasePlugin Copyright (C) 2002-2007 Tait Cyrus, tait.cyrus@usa.net
 #
@@ -92,6 +92,10 @@ sub connect {
 
   throw Error::Simple("Can't open database $this->{id}: ". $DBI::errstr)
     unless $db;
+
+  # see http://foswiki.org/Support/Question1122
+  $db->{LongTruncOk} = 1;
+  $db->{LongReadLen} = 1024;
 
   $this->{db} = $db;
 }
