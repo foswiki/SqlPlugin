@@ -313,7 +313,7 @@ sub checkAccess {
   if (! $ret) {
     $message .= " [ACCESS DENIED]";
   }
-  Foswiki::Func::writeEvent("sql", $message);
+  Foswiki::Func::writeEvent("sql", $message) if $Foswiki::cfg{Log}{Action}{sql};
 
   if (! $ret) {
     Foswiki::Func::writeWarning("SqlPlugin", "Access control check failed on database '$theDatabase' for query '$theQuery'");

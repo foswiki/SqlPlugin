@@ -1,1 +1,2 @@
 DBI,>=1,cpan,Required.
+Text::ParseWords,>=1,cpan,Required.

@@ -126,6 +126,7 @@ The behavior when the database parameter is omitted is unchanged.
 |  Version: | %$VERSION% |
 |  Release: | %$RELEASE% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  18 Mar 2014: | (2.00) Foswiki:Tasks/Item12801 - make logging of sql action configurable |
 |  29 Jan 2014: | (1.99) Foswiki:Tasks/Item12245 - enhance handing of bind parameters (Foswiki:Main/FrankHoellering) %BR% \
                          Foswiki:Tasks/Item12236 - cache bind values to be reused in =continue= mode (Foswiki:Main/FrankHoellering) %BR% \
                          Foswiki:Tasks/Item12737 - fix oracle long column type (Foswiki:Main/HansJosefKoehler) |
