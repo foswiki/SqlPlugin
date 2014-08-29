@@ -18,8 +18,8 @@ package Foswiki::Plugins::SqlPlugin;
 use strict;
 use warnings;
 
-our $VERSION = '1.99';
-our $RELEASE = '1.99';
+our $VERSION = '2.00';
+our $RELEASE = '2.00';
 our $SHORTDESCRIPTION = 'SQL interface for Foswiki';
 our $NO_PREFS_IN_TOPIC = 1;
 our $doneInit;

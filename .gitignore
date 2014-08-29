@@ -1,0 +1,8 @@
+*.swp
+SqlPlugin.md5
+SqlPlugin.sha1
+SqlPlugin.tgz
+SqlPlugin.txt
+SqlPlugin.zip
+SqlPlugin_installer
+SqlPlugin_installer.pl

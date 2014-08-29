@@ -16,6 +16,8 @@
 package Foswiki::Plugins::SqlPlugin::Core;
 
 use strict;
+use warnings;
+
 use Foswiki::Plugins::SqlPlugin::Connection ();
 use Error qw( :try );
 use Foswiki::Sandbox ();
@@ -28,11 +30,11 @@ our %accessControls;
 our %cache;
 our $defaultDatabase;
 
-use constant DEBUG => 0; # toggle me
+use constant TRACE => 0; # toggle me
 
 ###############################################################################
 sub writeDebug {
-  print STDERR "- SqlPlugin::Core - $_[0]\n" if DEBUG;
+  print STDERR "- SqlPlugin::Core - $_[0]\n" if TRACE;
 #  Foswiki::Func::writeDebug("SqlPlugin::Core", $_[0]);
 }
 

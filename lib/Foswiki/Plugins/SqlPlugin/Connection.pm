@@ -19,14 +19,15 @@ package Foswiki::Plugins::SqlPlugin::Connection;
 
 use DBI ();
 use strict;
+use warnings;
 use Error qw( :try );
 use Foswiki::Sandbox ();
 
-use constant DEBUG => 0; # toggle me
+use constant TRACE => 0; # toggle me
 
 ###############################################################################
 sub writeDebug {
-  print STDERR "- SqlPlugin::Connection - $_[0]\n" if DEBUG;
+  print STDERR "- SqlPlugin::Connection - $_[0]\n" if TRACE;
 }
 
 
