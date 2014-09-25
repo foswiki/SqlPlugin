@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="autosave" date="1356278780" format="1.1" version="4"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1411637538" format="1.1" version="1"}%
 ---+!! %TOPIC%
 
 %TOC%
@@ -126,6 +126,7 @@ The behavior when the database parameter is omitted is unchanged.
 |  Version: | %$VERSION% |
 |  Release: | %$RELEASE% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  25 Sep 2014: | (3.00) Foswiki:Tasks/Item13037 - rewrite the core in an object-oriented way |
 |  18 Mar 2014: | (2.00) Foswiki:Tasks/Item12801 - make logging of sql action configurable |
 |  29 Jan 2014: | (1.99) Foswiki:Tasks/Item12245 - enhance handing of bind parameters (Foswiki:Main/FrankHoellering) %BR% \
                          Foswiki:Tasks/Item12236 - cache bind values to be reused in =continue= mode (Foswiki:Main/FrankHoellering) %BR% \

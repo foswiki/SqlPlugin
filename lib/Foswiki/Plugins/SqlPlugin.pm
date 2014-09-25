@@ -18,53 +18,93 @@ package Foswiki::Plugins::SqlPlugin;
 use strict;
 use warnings;
 
-our $VERSION = '2.00';
-our $RELEASE = '2.00';
+our $VERSION = '3.00';
+our $RELEASE = '3.00';
 our $SHORTDESCRIPTION = 'SQL interface for Foswiki';
 our $NO_PREFS_IN_TOPIC = 1;
-our $doneInit;
-our $baseWeb;
-our $baseTopic;
+our $core;
 
-##############################################################################
+=begin TML
+---++ StaticMethod core() -> $core
+
+defered construction of the plugin's core; this is a singleton instance.
+
+=cut
+sub core {
+
+  unless (defined $core) {
+    require Foswiki::Plugins::SqlPlugin::Core;
+    $core = Foswiki::Plugins::SqlPlugin::Core->new();
+  }
+
+  return $core;
+}
+
+=begin TML
+---++ StaticMethod initPlugin($topic, $web) -> $boolean
+
+plugin constructor called at the beginning of every request
+
+=cut
 sub initPlugin {
-  ($baseTopic, $baseWeb) = @_;
 
-  Foswiki::Func::registerTagHandler('SQL', \&handleSQL);
-  Foswiki::Func::registerTagHandler('SQLFORMAT', \&handleSQLFORMAT);
-  Foswiki::Func::registerTagHandler('SQLINFO', \&handleSQLINFO);
+  Foswiki::Func::registerTagHandler('SQL', sub {
+    return core->handleSQL(@_);
+  });
 
-  $doneInit = 0;
+  Foswiki::Func::registerTagHandler('SQLFORMAT', sub {
+    return core->handleSQLFORMAT(@_);
+  });
+
+  Foswiki::Func::registerTagHandler('SQLINFO', sub {
+    return core->handleSQLINFO(@_);
+  });
+
+  $core = undef;
   return 1;
 }
 
-###############################################################################
-sub init {
-  return if $doneInit;
-  $doneInit = 1;
-  require Foswiki::Plugins::SqlPlugin::Core;
-  Foswiki::Plugins::SqlPlugin::Core::init($baseWeb, $baseTopic);
-}
+=begin TML
+---++ StaticMethod finishPlugin
 
-###############################################################################
+function called at the end of every request
+
+=cut
 sub finishPlugin {
-  return unless $doneInit;
-  Foswiki::Plugins::SqlPlugin::Core::finish(@_);
+  return unless $core;
+
+  $core->finish(@_);
+
+  undef $core;
 }
 
-##############################################################################
+=begin TML
+---++ StaticMethod handleSQL($session, $params, $topic, $web) -> $string
+
+expands the SQL makro
+
+=cut
 sub handleSQL {
-  init();
-  return Foswiki::Plugins::SqlPlugin::Core::handleSQL(@_);
+  core->handleSQL(@_);
 }
 
-##############################################################################
+=begin TML
+---++ StaticMethod handleSQLFORM($session, $params, $topic, $web) -> $string
+
+expands the SQLFORMAT makro
+
+=cut
 sub handleSQLFORMAT {
   init();
   return Foswiki::Plugins::SqlPlugin::Core::handleSQLFORMAT(@_);
 }
 
-##############################################################################
+=begin TML
+---++ StaticMethod handleSQLINFO($session, $params, $topic, $web) -> $string
+
+expands the SQLINFO makro
+
+=cut
 sub handleSQLINFO {
   init();
   return Foswiki::Plugins::SqlPlugin::Core::handleSQLINFO(@_);
@@ -84,9 +124,7 @@ Throws Error::Simple on errors.
 
 =cut
 sub execute {
-  init();
-  return Foswiki::Plugins::SqlPlugin::Core::handleExecute(@_);
+  return core->execute(@_);
 }
 
 1;
-
