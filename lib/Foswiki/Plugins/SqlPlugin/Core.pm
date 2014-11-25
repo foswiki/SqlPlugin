@@ -44,7 +44,7 @@ sub new {
     $this->{defaultDatabase} = $desc->{id} unless defined $this->{defaultDatabase};
   }
 
-  %{$this->{accessControls}} = %{$Foswiki::cfg{SqlPlugins}{AccessControl}}
+  %{$this->{accessControls}} = %{$Foswiki::cfg{SqlPlugin}{AccessControl}}
     if defined $Foswiki::cfg{SqlPlugin}{AccessControl};
 
   return $this;
