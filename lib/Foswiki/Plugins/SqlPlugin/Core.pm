@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 # 
-# Copyright (C) 2009-2014 Michael Daum http://michaeldaumconsulting.com
+# Copyright (C) 2009-2015 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -31,7 +31,7 @@ sub new {
 
   my $this = {
     connections => undef,
-    accessControls => undef,
+    accessControls => $Foswiki::cfg{SqlPlugin}{AccessControl},
     cache => undef,
     defaultDatabase => undef,
     @_
@@ -44,8 +44,6 @@ sub new {
     $this->{defaultDatabase} = $desc->{id} unless defined $this->{defaultDatabase};
   }
 
-  %{$this->{accessControls}} = %{$Foswiki::cfg{SqlPlugin}{AccessControl}}
-    if defined $Foswiki::cfg{SqlPlugin}{AccessControl};
 
   return $this;
 }

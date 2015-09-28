@@ -1,5 +1,6 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1411637538" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" date="1443426666" format="1.1" version="1"}%
 ---+!! %TOPIC%
+%FORMFIELD{"Description"}%
 
 %TOC%
 
@@ -115,17 +116,11 @@ The behavior when the database parameter is omitted is unchanged.
 
 %$INSTALL_INSTRUCTIONS%
 
----++ Info
-<!--
-   * Set SHORTDESCRIPTION = SQL interface for Foswiki
--->
+---++ Dependencies
+%$DEPENDENCIES%
 
-|  Author(s): | Foswiki:MichaelDaum|
-|  Copyright: | &copy; 2009-2014 Michael Daum http://michaeldaumconsulting.com |
-|  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
-|  Version: | %$VERSION% |
-|  Release: | %$RELEASE% |
-|  Change History: | <!-- versions below in reverse order -->&nbsp; |
+---++ Change History
+|  29 Sep 2015: | (3.02) Foswiki:Tasks/Item13623 - fixed error initializing access rules |
 |  25 Sep 2014: | (3.00) Foswiki:Tasks/Item13037 - rewrite the core in an object-oriented way |
 |  18 Mar 2014: | (2.00) Foswiki:Tasks/Item12801 - make logging of sql action configurable |
 |  29 Jan 2014: | (1.99) Foswiki:Tasks/Item12245 - enhance handing of bind parameters (Foswiki:Main/FrankHoellering) %BR% \
@@ -137,6 +132,14 @@ The behavior when the database parameter is omitted is unchanged.
                          Foswiki:Tasks/Item12033 - also log access from API and log access control failures (Foswiki:Main/KipLubliner) |
 |  18 May 2012: | (1.02) Added bind parameters, access control, perl API.  (Foswiki:Main/KipLubliner) |
 |  14 Jun 2010: | removed hard-coded sort of column keys |
-|  Dependencies: | %$DEPENDENCIES% |
-|  Home page: | http://foswiki.org/Extensions/%TOPIC% |
-|  Support page: | http://foswiki.org/Support/%TOPIC% |
+
+%META:FORM{name="PackageForm"}%
+%META:FIELD{name="Author" title="Author" value="Foswiki:MichaelDaum"}%
+%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2009-2015 Michael Daum http://michaeldaumconsulting.com"}%
+%META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
+%META:FIELD{name="Home" title="Home" value="http://foswiki.org/Extensions/%TOPIC%"}%
+%META:FIELD{name="License" title="License" value="[[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]]"}%
+%META:FIELD{name="Release" title="Release" value="%$RELEASE%"}%
+%META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%TOPIC%"}%
+%META:FIELD{name="Support" title="Support" value="http://foswiki.org/Support/%TOPIC%"}%
+%META:FIELD{name="Version" title="Version" value="%$VERSION%"}%

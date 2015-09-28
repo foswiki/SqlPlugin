@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 # 
-# Copyright (C) 2009-2014 Michael Daum http://michaeldaumconsulting.com
+# Copyright (C) 2009-2015 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,27 +18,12 @@ package Foswiki::Plugins::SqlPlugin;
 use strict;
 use warnings;
 
-our $VERSION = '3.01';
-our $RELEASE = '3.01';
+our $VERSION = '3.02';
+our $RELEASE = '29 Sep 2015';
 our $SHORTDESCRIPTION = 'SQL interface for Foswiki';
 our $NO_PREFS_IN_TOPIC = 1;
 our $core;
 
-=begin TML
----++ StaticMethod core() -> $core
-
-defered construction of the plugin's core; this is a singleton instance.
-
-=cut
-sub core {
-
-  unless (defined $core) {
-    require Foswiki::Plugins::SqlPlugin::Core;
-    $core = Foswiki::Plugins::SqlPlugin::Core->new();
-  }
-
-  return $core;
-}
 
 =begin TML
 ---++ StaticMethod initPlugin($topic, $web) -> $boolean
@@ -49,19 +34,35 @@ plugin constructor called at the beginning of every request
 sub initPlugin {
 
   Foswiki::Func::registerTagHandler('SQL', sub {
-    return core->handleSQL(@_);
+    return getCore()->handleSQL(@_);
   });
 
   Foswiki::Func::registerTagHandler('SQLFORMAT', sub {
-    return core->handleSQLFORMAT(@_);
+    return getCore()->handleSQLFORMAT(@_);
   });
 
   Foswiki::Func::registerTagHandler('SQLINFO', sub {
-    return core->handleSQLINFO(@_);
+    return getCore()->handleSQLINFO(@_);
   });
 
   $core = undef;
   return 1;
+}
+
+=begin TML
+---++ StaticMethod getCore() -> $core
+
+defered construction of the plugin's core; this is a singleton instance.
+
+=cut
+sub getCore {
+
+  unless (defined $core) {
+    require Foswiki::Plugins::SqlPlugin::Core;
+    $core = Foswiki::Plugins::SqlPlugin::Core->new();
+  }
+
+  return $core;
 }
 
 =begin TML
@@ -85,7 +86,7 @@ expands the SQL makro
 
 =cut
 sub handleSQL {
-  core->handleSQL(@_);
+  getCore()->handleSQL(@_);
 }
 
 =begin TML
@@ -124,7 +125,7 @@ Throws Error::Simple on errors.
 
 =cut
 sub execute {
-  return core->execute(@_);
+  return getCore()->execute(@_);
 }
 
 1;
