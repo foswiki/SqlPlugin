@@ -47,3 +47,5 @@ $Foswiki::cfg{SqlPlugin}{AccessControl} =
                  ]
    },
 ];
+
+1;

@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 # 
-# Copyright (C) 2009-2015 Michael Daum http://michaeldaumconsulting.com
+# Copyright (C) 2009-2016 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -298,19 +298,19 @@ sub formatResult {
 
 ##############################################################################
 # Check if the currently logged in user has permission to run
-# $theQuery on $theDatabase.  Thows Error::Simple on access failure.
+# $theQuery on $theDatabase.  Throws Error::Simple on access failure.
 ##############################################################################
 sub checkAccess {
   my ($this, $theDatabase, $theQuery) = @_;
 
-  my $isAllowed = 0;
+  my $isAllowed = 1;
 
-  if (!$this->{accessControls} || !defined($this->{accessControls}{$theDatabase})) {
-    $isAllowed = 1;
-  } else {
-
+  if ($this->{accessControls}) {
     my $user = Foswiki::Func::getWikiName();
-    foreach my $access (@{$this->{accessControls}{$theDatabase}}) {
+    foreach my $access (@{$this->{accessControls}}) {
+      next unless $access->{id} eq $theDatabase;
+  
+      $isAllowed = 0;
 
       my $whoPasses = 0;
       my $who = $access->{who};
@@ -351,6 +351,7 @@ sub checkAccess {
 
       if ($whoPasses && $queryPasses) {
         $isAllowed = 1;
+        last;
       }
     }
   }
