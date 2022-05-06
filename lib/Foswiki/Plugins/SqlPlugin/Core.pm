@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
-# 
-# Copyright (C) 2009-2016 Michael Daum http://michaeldaumconsulting.com
+#
+# Copyright (C) 2009-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@ use Error qw( :try );
 use Foswiki::Sandbox ();
 use Text::ParseWords ();
 
-use constant TRACE => 0; # toggle me
+use constant TRACE => 0;    # toggle me
 
 ##############################################################################
 sub new {
@@ -39,11 +39,10 @@ sub new {
   bless($this, $class);
 
   foreach my $desc (@{$Foswiki::cfg{SqlPlugin}{Databases}}) {
-    my $connection = new Foswiki::Plugins::SqlPlugin::Connection(%$desc);
+    my $connection = Foswiki::Plugins::SqlPlugin::Connection->new(%$desc);
     $this->connection($desc->{id}, $connection);
     $this->{defaultDatabase} = $desc->{id} unless defined $this->{defaultDatabase};
   }
-
 
   return $this;
 }
@@ -52,11 +51,23 @@ sub new {
 sub connection {
   my ($this, $id, $connection) = @_;
 
-  if (defined $connection) {
+  if (defined $connection && defined $id) {
     $this->{connections}{$id} = $connection;
   } else {
-    $connection = $this->{connections}{$id};
-    throw Error::Simple("unknown database '$id'") unless defined $connection;
+    if ($id =~ /^($Foswiki::regex{webNameRegex})\.($Foswiki::regex{topicNameRegex})\[(.*?)\]$/) {
+      my $web = $1;
+      my $topic = $2;
+      my $attachment = $3;
+      $connection = Foswiki::Plugins::SqlPlugin::Connection->new(
+        id => $id,
+        web => $web,
+        topic => $topic,
+        attachment => $attachment,
+      );
+    } else {
+      $connection = $this->{connections}{$id};
+      throw Error::Simple("unknown database '$id'") unless defined $connection;
+    }
   }
 
   return $connection;
@@ -127,11 +138,11 @@ sub handleSQL {
 
     $connection->connect();
 
-    my $sth = $connection->{db}->prepare_cached($theQuery) or
-      throw Error::Simple("Can't prepare cmd '$theQuery': ".$connection->{db}->errstr);
+    my $sth = $connection->{db}->prepare_cached($theQuery)
+      or throw Error::Simple("Can't prepare cmd '$theQuery': " . ($connection->{db}->errstr || ''));
 
-    $sth->execute(@bindVals) or 
-      throw Error::Simple("Can't execute cmd '$theQuery': ".$connection->{db}->errstr);
+    $sth->execute(@bindVals)
+      or throw Error::Simple("Can't execute cmd '$theQuery': " . ($connection->{db}->errstr || ''));
 
     # cache this statement under the given id
     $this->{cache}{$theId} = {
@@ -140,14 +151,13 @@ sub handleSQL {
       bindVals => \@bindVals,
     } if $theId;
 
-    if($sth->{NUM_OF_FIELDS}) {
+    if ($sth->{NUM_OF_FIELDS}) {
       # select statement
       $result = $this->formatResult($params, $sth);
     } else {
       # non-select statement
       $result = $sth->rows();
     }
-
 
   } catch Error::Simple with {
     my $msg = shift->{-text};
@@ -185,8 +195,7 @@ sub handleSQLFORMAT {
     }
 
     $result = $this->formatResult($params, $sth);
-  }
-  catch Error::Simple with {
+  } catch Error::Simple with {
     my $msg = shift->{-text};
     $msg =~ s/ at .*?$//gs;
     $result = inlineError($msg);
@@ -214,67 +223,66 @@ sub handleSQLINFO {
   } else {
     push @selectedIds, keys %{$this->{connections}};
   }
-  
+
   my @result = ();
   foreach my $id (sort @selectedIds) {
     my $connection = $this->connection($id);
-    next unless $connection;# ignore
+    next unless $connection;    # ignore
 
     my $line = $theFormat;
     $line =~ s/\$id/$id/g;
     $line =~ s/\$dsn/$connection->{dsn}/g;
-    $line =~ s/\$nop//go;
-    $line =~ s/\$n/\n/go;
-    $line =~ s/\$perce?nt/\%/go;
-    $line =~ s/\$dollar/\$/go;
+    $line =~ s/\$nop//g;
+    $line =~ s/\$n/\n/g;
+    $line =~ s/\$perce?nt/\%/g;
+    $line =~ s/\$dollar/\$/g;
     push @result, $line;
   }
 
   return '' unless @result;
-  return $theHeader.join($theSeparator, @result).$theFooter;
+  return $theHeader . join($theSeparator, @result) . $theFooter;
 }
-
 
 ##############################################################################
 sub formatResult {
   my ($this, $params, $sth) = @_;
-  
+
   my $theFormat = $params->{format};
   my $theHeader = $params->{header};
   my $theFooter = $params->{footer};
   my $theSeparator = $params->{separator};
   my $theHidenull = $params->{hidenull} || 'off';
-  $theHidenull = ($theHidenull eq 'on')?1:0;
+  $theHidenull = ($theHidenull eq 'on') ? 1 : 0;
   my $theLimit = $params->{limit} || 0;
   my $theSkip = $params->{skip} || 0;
 
   if (!defined($theFormat) && !defined($theHeader) && !defined($theFooter)) {
-    $theHeader = '<table class="foswikiTable"><tr>';
+    $theHeader = '<table class="foswikiTable"><thead><tr>';
     foreach my $key (@{$sth->{NAME}}) {
       $theHeader .= "<th> $key </th>";
     }
-    $theHeader .= '</tr>';
+    $theHeader .= '</tr></thead><tbody>';
     $theFormat = '<tr>';
     foreach my $key (@{$sth->{NAME}}) {
       $key ||= '';
       $theFormat .= "<td> \$$key </td>";
     }
     $theFormat .= '</tr>';
-    $theFooter = '</table>'
+    $theFooter = '</tbody></table>';
   }
 
   my @lines = ();
   if ($theFormat) {
     my $index = 0;
-    while (my $res = $sth->fetchrow_hashref() ) {
+    while (my $res = $sth->fetchrow_hashref()) {
       $index++;
       next if $theSkip && $index <= $theSkip;
       my $line = $theFormat;
 
       foreach my $key (keys %$res) {
-        my $val = $res->{$key} || '';
+        my $val = $res->{$key} // '';
         $line =~ s/\$index/$index/g;
-        $line =~ s/\$\Q$key/$val/g;
+        $line =~ s/\$\Q$key\E\b/$val/g;
       }
       push @lines, $line;
       last if $theLimit && $index >= $theLimit;
@@ -286,11 +294,11 @@ sub formatResult {
     $theHeader ||= '';
     $theFooter ||= '';
     $theSeparator ||= '';
-    $result = $theHeader.join($theSeparator, @lines).$theFooter;
-    $result =~ s/\$nop//go;
-    $result =~ s/\$n/\n/go;
-    $result =~ s/\$perce?nt/\%/go;
-    $result =~ s/\$dollar/\$/go;
+    $result = $theHeader . join($theSeparator, @lines) . $theFooter;
+    $result =~ s/\$nop//g;
+    $result =~ s/\$n/\n/g;
+    $result =~ s/\$perce?nt/\%/g;
+    $result =~ s/\$dollar/\$/g;
   }
 
   return $result;
@@ -309,7 +317,7 @@ sub checkAccess {
     my $user = Foswiki::Func::getWikiName();
     foreach my $access (@{$this->{accessControls}}) {
       next unless $access->{id} eq $theDatabase;
-  
+
       $isAllowed = 0;
 
       my $whoPasses = 0;
@@ -360,7 +368,8 @@ sub checkAccess {
   $message =~ s/\n/ /g;    # remove newlines
   $message .= " [ACCESS DENIED]" unless $isAllowed;
 
-  Foswiki::Func::writeEvent("sql", $message) if $Foswiki::cfg{Log}{Action}{sql};
+  Foswiki::Func::writeEvent("sql", $message)
+    unless exists $Foswiki::cfg{Log}{Action}{sql} && !$Foswiki::cfg{Log}{Action}{sql};
 
   unless ($isAllowed) {
     $message = "Access control check failed on database '$theDatabase' for query '$theQuery'";
@@ -388,7 +397,7 @@ sub entityDecode {
 
 sub writeDebug {
   print STDERR "- SqlPlugin::Core - $_[0]\n" if TRACE;
-#  Foswiki::Func::writeDebug("SqlPlugin::Core", $_[0]);
+  #  Foswiki::Func::writeDebug("SqlPlugin::Core", $_[0]);
 }
 
 sub inlineError {
@@ -397,6 +406,5 @@ sub inlineError {
 
   return "<noautolink><span class='foswikiAlert'>ERROR: $msg </span></noautolink>";
 }
-
 
 1;

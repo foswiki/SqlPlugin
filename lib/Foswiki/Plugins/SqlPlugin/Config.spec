@@ -18,6 +18,9 @@ $Foswiki::cfg{SqlPlugin}{Databases} =
       dsn => 'dbi:mysql:foswiki:localhost',
       username => 'foswiki_user',
       password => 'foswiki_password',
+      params => {
+        mysql_enable_utf8 => 1
+      }
    },
 ];
 

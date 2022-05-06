@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
-# 
-# Copyright (C) 2009-2016 Michael Daum http://michaeldaumconsulting.com
+#
+# Copyright (C) 2009-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # Based on DatabasePlugin Copyright (C) 2002-2007 Tait Cyrus, tait.cyrus@usa.net
 #
@@ -22,14 +22,15 @@ use strict;
 use warnings;
 use Error qw( :try );
 use Foswiki::Sandbox ();
+use Foswiki::Plugins ();
+use Foswiki::Func ();
 
-use constant TRACE => 0; # toggle me
+use constant TRACE => 0;    # toggle me
 
 ###############################################################################
 sub writeDebug {
   print STDERR "- SqlPlugin::Connection - $_[0]\n" if TRACE;
 }
-
 
 ###############################################################################
 sub new {
@@ -39,14 +40,12 @@ sub new {
     db => undef,
     id => '',
     dsn => '',
+    params => {},
     @_
   };
 
-  # untaint this
-  foreach my $key (%$this) {
-    next unless $key && $this->{$key};
-    $this->{$key} = Foswiki::Sandbox::untaintUnchecked($this->{$key});
-  }
+  $this->{params}{PrintError} = 0;
+  $this->{params}{RaiseError} = 1;
 
   bless($this, $class);
 
@@ -56,7 +55,7 @@ sub new {
 ###############################################################################
 sub DESTROY {
   my $this = shift;
-  
+
   $this->disconnect();
   #writeDebug("destroying $this->{id}");
 }
@@ -77,28 +76,52 @@ sub connect {
 
   return if $this->{db};
 
-  writeDebug("connecting $this->{id} using $this->{dsn}");
-
   # just create it
   my $workarea = Foswiki::Func::getWorkArea('SqlPlugin');
 
-  my $db = DBI->connect(
-    $this->{dsn},
-    $this->{username},
-    $this->{password},
-    { 
-      PrintError => 0, 
-      RaiseError => 1 
-    });
+  if (defined $this->{attachment}) {
 
-  throw Error::Simple("Can't open database $this->{id}: ". $DBI::errstr)
-    unless $db;
+    my $session = $Foswiki::Plugins::SESSION;
+    my ($web, $topic) = Foswiki::Func::normalizeWebTopicName($this->{web} || $session->{webName}, $this->{topic} || $session->{topicName});
+
+    throw Error::Simple("topic does not exist") unless Foswiki::Func::topicExists($web, $topic);
+    throw Error::Simple("attachment does not exist") unless Foswiki::Func::attachmentExists($web, $topic, $this->{attachment});
+
+    # build dsn param
+    if ($this->{attachment} =~ /\.xls$/i) {    # doesn't seem to like xlsx
+                                               # DBD::Excel
+
+      my $filePath = $Foswiki::cfg{PubDir} . '/' . $web . '/' . $topic . '/' . $this->{attachment};
+      $this->{dsn} = 'DBI:Excel:file=' . $filePath;
+
+      $this->{db} = DBI->connect($this->{dsn}, $this->{username}, $this->{password}, $this->{params});
+
+    } elsif ($this->{attachment} =~ /\.csv$/i) {
+      # DBD::CSV
+      my $dirPath = $Foswiki::cfg{PubDir} . '/' . $web . '/' . $topic;
+      $this->{dsn} = 'dbi:CSV:';
+
+      $this->{params}{f_dir} = $dirPath;
+      $this->{params}{f_ext} = '.csv';
+
+      $this->{db} = DBI->connect($this->{dsn}, $this->{username}, $this->{password}, $this->{params});
+    } else {
+      throw Error::Simple("unknown database type");
+    }
+
+    #print STDERR "dsn=$this->{dsn}\n";
+  } else {
+    $this->{db} = DBI->connect($this->{dsn}, $this->{username}, $this->{password}, $this->{params});
+  }
+
+  throw Error::Simple("can't open database $this->{id}: " . $DBI::errstr)
+    unless $this->{db};
 
   # see http://foswiki.org/Support/Question1122
-  $db->{LongTruncOk} = 1;
-  $db->{LongReadLen} = 1024;
+  $this->{db}->{LongTruncOk} = 1;
+  $this->{db}->{LongReadLen} = 1024;
 
-  $this->{db} = $db;
+  return $this->{db};
 }
 
 1;

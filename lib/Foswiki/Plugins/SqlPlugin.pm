@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 # 
-# Copyright (C) 2009-2016 Michael Daum http://michaeldaumconsulting.com
+# Copyright (C) 2009-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,14 +18,14 @@ package Foswiki::Plugins::SqlPlugin;
 use strict;
 use warnings;
 
-our $VERSION = '3.03';
-our $RELEASE = '09 Sep 2016';
+our $VERSION = '4.00';
+our $RELEASE = '06 May 2022';
 our $SHORTDESCRIPTION = 'SQL interface for Foswiki';
 our $NO_PREFS_IN_TOPIC = 1;
 our $core;
 
-
 =begin TML
+
 ---++ StaticMethod initPlugin($topic, $web) -> $boolean
 
 plugin constructor called at the beginning of every request
@@ -66,6 +66,7 @@ sub getCore {
 }
 
 =begin TML
+
 ---++ StaticMethod finishPlugin
 
 function called at the end of every request
@@ -86,18 +87,17 @@ expands the SQL makro
 
 =cut
 sub handleSQL {
-  getCore()->handleSQL(@_);
+  return getCore()->handleSQL(@_);
 }
 
 =begin TML
----++ StaticMethod handleSQLFORM($session, $params, $topic, $web) -> $string
+---++ StaticMethod handleSQLFORMAT($session, $params, $topic, $web) -> $string
 
 expands the SQLFORMAT makro
 
 =cut
 sub handleSQLFORMAT {
-  init();
-  return Foswiki::Plugins::SqlPlugin::Core::handleSQLFORMAT(@_);
+  return getCore()->handleSQLFORMAT(@_);
 }
 
 =begin TML
@@ -107,8 +107,7 @@ expands the SQLINFO makro
 
 =cut
 sub handleSQLINFO {
-  init();
-  return Foswiki::Plugins::SqlPlugin::Core::handleSQLINFO(@_);
+  return getCore()->handleSQLINFO(@_);
 }
 
 =begin TML

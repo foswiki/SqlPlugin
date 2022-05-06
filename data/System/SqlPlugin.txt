@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" date="1443426666" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" date="1553269529" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -120,6 +120,8 @@ The behavior when the database parameter is omitted is unchanged.
 %$DEPENDENCIES%
 
 ---++ Change History
+|  06 May 2022: | (4.00) Foswiki:Tasks/Item14987 - add =params= option to database config to be able to specify driver specific optios such as =mysql_enable_utf8=; \
+                         Foswiki:Tasks/Item14849 - fix strange formatted query results when match occurs in start of field names like time and timeStamp (Foswiki:Main/BramVanOosterhout) |
 |  09 Sep 2016: | (3.03) Foswiki:Tasks/Item14189 - fix checking for access control rules, i.e. when none are defined |
 |  29 Sep 2015: | (3.02) Foswiki:Tasks/Item13623 - fixed error initializing access rules |
 |  25 Sep 2014: | (3.00) Foswiki:Tasks/Item13037 - rewrite the core in an object-oriented way |
@@ -136,7 +138,7 @@ The behavior when the database parameter is omitted is unchanged.
 
 %META:FORM{name="PackageForm"}%
 %META:FIELD{name="Author" title="Author" value="Foswiki:MichaelDaum"}%
-%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2009-2016 Michael Daum http://michaeldaumconsulting.com"}%
+%META:FIELD{name="Copyright" title="Copyright" value="&copy; 2009-2022 Michael Daum"}%
 %META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
 %META:FIELD{name="Home" title="Home" value="https://foswiki.org/Extensions/%TOPIC%"}%
 %META:FIELD{name="License" title="License" value="[[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]]"}%

@@ -1,3 +1,4 @@
+!noci
 data/System/SqlPlugin.txt 0644
 lib/Foswiki/Plugins/SqlPlugin/Config.spec 0644
 lib/Foswiki/Plugins/SqlPlugin/DEPENDENCIES 0644
