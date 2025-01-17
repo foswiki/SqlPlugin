@@ -1,7 +1,10 @@
 !noci
 data/System/SqlPlugin.txt 0644
+data/System/VarSQLFORMAT.txt 0644
+data/System/VarSQL.txt 0644
 lib/Foswiki/Plugins/SqlPlugin/Config.spec 0644
-lib/Foswiki/Plugins/SqlPlugin/DEPENDENCIES 0644
-lib/Foswiki/Plugins/SqlPlugin/Core.pm 0644
 lib/Foswiki/Plugins/SqlPlugin/Connection.pm 0644
+lib/Foswiki/Plugins/SqlPlugin/Core.pm 0644
+lib/Foswiki/Plugins/SqlPlugin/DEPENDENCIES 0644
+lib/Foswiki/Plugins/SqlPlugin/MANIFEST 0644
 lib/Foswiki/Plugins/SqlPlugin.pm 0644
